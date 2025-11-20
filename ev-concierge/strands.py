@@ -1,7 +1,12 @@
 import boto3
 import json
+import os
 from typing import Callable, List, Any
 from dataclasses import dataclass
+from dotenv import load_dotenv
+
+# Load environment variables
+load_dotenv()
 
 @dataclass
 class ToolCall:
@@ -26,7 +31,20 @@ class Tool:
 class Strands:
     def __init__(self, model_id: str, region: str):
         self.model_id = model_id
-        self.bedrock = boto3.client('bedrock-runtime', region_name=region)
+        
+        # Build boto3 client config with credentials from environment
+        client_config = {
+            'region_name': region,
+            'aws_access_key_id': os.getenv('AWS_ACCESS_KEY_ID'),
+            'aws_secret_access_key': os.getenv('AWS_SECRET_ACCESS_KEY')
+        }
+        
+        # Add session token if present (for temporary credentials)
+        session_token = os.getenv('AWS_SESSION_TOKEN')
+        if session_token:
+            client_config['aws_session_token'] = session_token
+        
+        self.bedrock = boto3.client('bedrock-runtime', **client_config)
     
     def run(self, system_prompt: str, user_prompt: str, tools: List[Tool], max_iterations: int = 5) -> StrandsResponse:
         tool_calls = []

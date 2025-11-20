@@ -24,7 +24,7 @@ source venv/bin/activate
 
 # Install dependencies
 echo "📥 Installing dependencies..."
-pip install -q -r requirements.txt
+bash install_deps.sh
 
 # Check if .env exists
 if [ ! -f ".env" ]; then
@@ -43,7 +43,7 @@ fi
 
 echo ""
 echo "🚀 Starting EV Concierge..."
-echo "📱 Access the UI at: http://localhost:7860"
+echo "📱 Access the UI at: http://localhost:8501"
 echo ""
 
-python app.py
+streamlit run app_streamlit.py --server.port=8501 --server.address=0.0.0.0
