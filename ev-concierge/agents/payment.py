@@ -54,7 +54,17 @@ class PaymentAgent:
         Returns:
             Dict with payment results and tool call details
         """
+        print("\n" + "="*70)
+        print("💳 PAYMENT AGENT CALLED")
+        print("="*70)
+        print(f"📋 Transactions to process: {len(transactions)}")
+        for i, txn in enumerate(transactions, 1):
+            print(f"   {i}. ${txn.get('amount', 0):.2f} to {txn.get('merchant', 'Unknown')}")
+        print(f"👛 Wallet ID: {wallet_id}")
+        print("="*70 + "\n")
+        
         if not transactions:
+            print("⚠️  No transactions to process\n")
             return {"payments": None, "message": "No payments to process", "tool_results": []}
         
         system_prompt = """You are a payment specialist. Process all transactions securely 
@@ -81,12 +91,65 @@ Process all payments and provide confirmation with transaction IDs."""
             get_payment_history_tool
         ]
         
+        print("🔧 Payment tools available:")
+        for tool in available_tools:
+            print(f"   - {tool.name}")
+        print()
+        
         response = self.strands.run(
             system_prompt=system_prompt,
             user_prompt=user_prompt,
             tools=available_tools,
             max_iterations=10
         )
+        
+        # Log the results
+        print("\n" + "="*70)
+        print("💳 PAYMENT AGENT RESULTS")
+        print("="*70)
+        print(f"🔧 Tools called: {len(response.tool_calls)}")
+        
+        total_charged = 0
+        payment_count = 0
+        
+        for call in response.tool_calls:
+            print(f"\n   📞 {call.tool_name}:")
+            
+            # Extract payment info from results
+            if call.tool_name == 'process_batch_payments' and isinstance(call.result, dict):
+                successful = call.result.get('successful', [])
+                failed = call.result.get('failed', [])
+                
+                print(f"      ✅ Successful: {len(successful)}")
+                print(f"      ❌ Failed: {len(failed)}")
+                
+                for payment in successful:
+                    if isinstance(payment, dict):
+                        amount = payment.get('amount', 0)
+                        merchant = payment.get('merchant', 'Unknown')
+                        txn_id = payment.get('transaction_id', 'N/A')
+                        total_charged += amount
+                        payment_count += 1
+                        print(f"         💰 ${amount:.2f} to {merchant} ({txn_id})")
+            
+            elif call.tool_name == 'validate_wallet' and isinstance(call.result, dict):
+                valid = call.result.get('valid', False)
+                balance = call.result.get('balance', 0)
+                print(f"      Valid: {valid}, Balance: ${balance:.2f}")
+            
+            elif call.tool_name == 'calculate_fees' and isinstance(call.result, dict):
+                amount = call.result.get('amount', 0)
+                fee = call.result.get('fee', 0)
+                total = call.result.get('total', 0)
+                print(f"      Amount: ${amount:.2f}, Fee: ${fee:.2f}, Total: ${total:.2f}")
+            
+            elif call.tool_name == 'generate_receipt' and isinstance(call.result, dict):
+                receipt_id = call.result.get('receipt_id', 'N/A')
+                print(f"      Receipt: {receipt_id}")
+        
+        print(f"\n💵 TOTAL CHARGED: ${total_charged:.2f}")
+        print(f"📊 PAYMENTS PROCESSED: {payment_count}")
+        print("="*70 + "\n")
         
         return {
             "payments": response.final_response,
