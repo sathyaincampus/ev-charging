@@ -71,6 +71,34 @@ class CoordinatorAgent:
         
         # Step 4: Payment
         transactions = []
+        
+        # Collect charging payments
+        for r in charging_result.get('tool_results', []):
+            if isinstance(r, dict):
+                # Check if this is a reservation with cost
+                if 'reservation_id' in r:
+                    # Get charger details from search results
+                    charger_id = r.get('charger_id')
+                    duration_min = r.get('duration_min', 30)
+                    
+                    # Find charger info from search results
+                    for search_result in charging_result.get('tool_results', []):
+                        if isinstance(search_result, list):
+                            for charger in search_result:
+                                if isinstance(charger, dict) and charger.get('id') == charger_id:
+                                    # Calculate charging cost
+                                    # Assume ~50 kWh for 30 min at 350kW (rough estimate)
+                                    kwh_charged = (duration_min / 60) * min(charger.get('power_kw', 150), 150) * 0.3
+                                    cost = kwh_charged * charger.get('price_per_kwh', 0.43)
+                                    
+                                    transactions.append({
+                                        "amount": round(cost, 2),
+                                        "merchant": f"{charger.get('network', 'Charging Network')} Charging",
+                                        "description": f"Charging session at {charger.get('location', 'charger')}"
+                                    })
+                                    break
+        
+        # Collect amenities payments
         for r in amenities_result.get('tool_results', []):
             if isinstance(r, dict) and 'total_usd' in r:
                 transactions.append({
@@ -157,15 +185,35 @@ class CoordinatorAgent:
         if payment_tools:
             total_paid = 0
             summary_parts.append("\n**💳 Payments:**")
+            
             for tool_result in payment_tools:
-                if isinstance(tool_result, dict) and 'transaction_id' in tool_result:
-                    amount = tool_result.get('amount', 0)
-                    merchant = tool_result.get('merchant', 'Merchant')
-                    total_paid += amount
-                    summary_parts.append(f"- ${amount:.2f} to {merchant}")
+                if isinstance(tool_result, dict):
+                    # Skip receipts (they have receipt_id, not payment data)
+                    if 'receipt_id' in tool_result:
+                        continue
+                    
+                    # Handle batch payment results
+                    if 'successful' in tool_result and isinstance(tool_result['successful'], list):
+                        for payment in tool_result['successful']:
+                            if isinstance(payment, dict):
+                                amount = payment.get('amount', 0)
+                                merchant = payment.get('merchant', 'Merchant')
+                                txn_id = payment.get('transaction_id', 'N/A')
+                                total_paid += amount
+                                summary_parts.append(f"- ${amount:.2f} to {merchant} (`{txn_id}`)")
+                    
+                    # Handle single payment results
+                    elif 'transaction_id' in tool_result and 'amount' in tool_result:
+                        amount = tool_result.get('amount', 0)
+                        merchant = tool_result.get('merchant', 'Merchant')
+                        txn_id = tool_result.get('transaction_id', 'N/A')
+                        total_paid += amount
+                        summary_parts.append(f"- ${amount:.2f} to {merchant} (`{txn_id}`)")
             
             if total_paid > 0:
                 summary_parts.append(f"\n**Total Charged: ${total_paid:.2f}**")
+            else:
+                summary_parts.append("- No payments processed")
         
         # Combine all parts
         if summary_parts:

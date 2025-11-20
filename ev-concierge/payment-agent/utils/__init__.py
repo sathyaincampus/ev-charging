@@ -1,6 +1,5 @@
-# Utils package
+"""Utils Package"""
 
-from .config import *
 from .mock_payment_data import MockPaymentData
 
 __all__ = ['MockPaymentData']

@@ -7,6 +7,11 @@ import time
 import random
 from datetime import datetime, timedelta
 from typing import List, Dict, Optional
+import sys
+import os
+
+# Add parent directory to path for imports
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from utils.mock_payment_data import MockPaymentData
 
 
@@ -357,28 +362,16 @@ def generate_receipt(transaction_id: str) -> dict:
     # Simulate receipt generation
     time.sleep(0.3)
     
-    # Generate mock receipt data
+    # Note: In mock mode, we return a generic receipt since we don't have
+    # a transaction database. The actual transaction details are in the
+    # payment result, not the receipt.
     receipt = {
         "receipt_id": f"RCP-{transaction_id}",
         "transaction_id": transaction_id,
         "date": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-        "merchant": "EVgo Charging",
-        "merchant_address": "123 Charging Lane, Los Angeles, CA 90001",
-        "items": [
-            {
-                "description": "Fast charging session",
-                "quantity": 1,
-                "unit_price": 24.50,
-                "total": 24.50
-            }
-        ],
-        "subtotal": 24.50,
-        "fee": 0.71,
-        "total": 25.21,
-        "payment_method": "Visa ****4242",
-        "status": "Paid",
+        "status": "Generated",
         "receipt_url": f"https://receipts.example.com/{transaction_id}",
-        "message": "Thank you for your payment!"
+        "message": "Receipt generated successfully. See transaction details for payment information."
     }
     
     return receipt
