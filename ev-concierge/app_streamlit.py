@@ -246,8 +246,8 @@ with col2:
     
     with st.expander("Edit Preferences"):
         auto_order = st.checkbox("Auto-order coffee/food", value=st.session_state.preferences['auto_order_coffee'])
-        favorite_drink = st.selectbox("Favorite Drink", ["Large Latte", "Cappuccino", "Coffee"], 
-                                      index=["Large Latte", "Cappuccino", "Coffee"].index(st.session_state.preferences.get('favorite_drink', 'Large Latte')))
+        favorite_drink = st.selectbox("Favorite Drink", ["Large Latte", "Cappuccino", "Coffee", "None"], 
+                                      index=["Large Latte", "Cappuccino", "Coffee", "None"].index(st.session_state.preferences.get('favorite_drink', 'Large Latte')))
         favorite_food = st.selectbox("Favorite Food", ["Breakfast Sandwich", "Croissant", "Cookies", "None"], 
                                      index=["Breakfast Sandwich", "Croissant", "Cookies", "None"].index(st.session_state.preferences.get('favorite_food', 'Breakfast Sandwich')))
         wallet_id = st.text_input("Wallet ID", value=st.session_state.preferences['wallet_id'])

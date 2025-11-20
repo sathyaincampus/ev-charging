@@ -22,8 +22,10 @@ pre-order based on user preferences and charging duration."""
         user_prompt = f"""
 Location: {location}
 Charging Duration: {charging_duration_min} minutes
-User Preferences: Favorite drink: {favorite_drink}"""
+User Preferences:"""
         
+        if favorite_drink and favorite_drink != 'None':
+            user_prompt += f" Favorite drink: {favorite_drink}"
         if favorite_food and favorite_food != 'None':
             user_prompt += f", Favorite food: {favorite_food}"
         
