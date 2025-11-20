@@ -10,15 +10,27 @@ class TripPlanningAgent:
         )
     
     def analyze(self, vehicle_data: dict, trip_data: dict) -> dict:
-        system_prompt = """You are a trip planning specialist for EVs. Analyze energy needs 
-and recommend the optimal charging strategy. Be concise and actionable."""
+        system_prompt = """You are a trip planning specialist for EVs.
+
+You have access to tools that you MUST use. Never make calculations yourself.
+
+CRITICAL: You MUST call the calculate_energy_needs tool first before providing any analysis.
+Do NOT respond with text until you have called the tool and received the results."""
         
         user_prompt = f"""
-Vehicle: {vehicle_data['model']}, Battery: {vehicle_data['battery_percent']}%, Range: {vehicle_data['range_miles']} miles
-Trip: {trip_data['origin']} to {trip_data['destination']}, Distance: {trip_data['distance_miles']} miles
-Departure: {trip_data['departure']}
+Vehicle Information:
+- Model: {vehicle_data['model']}
+- Current Battery: {vehicle_data['battery_percent']}%
+- Vehicle Range: {vehicle_data['range_miles']} miles
 
-Analyze if charging is needed and recommend strategy."""
+Trip Information:
+- From: {trip_data['origin']}
+- To: {trip_data['destination']}
+- Distance: {trip_data['distance_miles']} miles
+- Departure: {trip_data['departure']}
+
+Use the calculate_energy_needs tool to analyze if charging is needed for this trip.
+Call it with: battery_percent={vehicle_data['battery_percent']}, trip_distance_miles={trip_data['distance_miles']}, vehicle_range_miles={vehicle_data['range_miles']}"""
         
         response = self.strands.run(
             system_prompt=system_prompt,
@@ -26,6 +38,15 @@ Analyze if charging is needed and recommend strategy."""
             tools=[calculate_energy_needs, get_route_info],
             max_iterations=3
         )
+        
+        # Debug: Print tool calls
+        print(f"\n🔍 DEBUG - Trip Planning Agent:")
+        print(f"   Tool calls made: {len(response.tool_calls)}")
+        if response.tool_calls:
+            for call in response.tool_calls:
+                print(f"   - {call.tool_name}: {call.result}")
+        else:
+            print(f"   ⚠️  No tools were called!")
         
         return {
             "analysis": response.final_response,

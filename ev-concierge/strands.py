@@ -126,12 +126,26 @@ class Strands:
             
             # Call Bedrock
             try:
+                # Debug: Print request
+                print(f"\n🔍 Strands SDK - Iteration {iteration + 1}")
+                print(f"   Tools available: {[t['name'] for t in tool_specs]}")
+                if iteration == 0 and tool_specs:
+                    print(f"   Tool schemas:")
+                    for tool_spec in tool_specs:
+                        print(f"      - {tool_spec['name']}: {tool_spec.get('input_schema', {}).get('required', [])}")
+                
                 response = self.bedrock.invoke_model(
                     modelId=self.model_id,
                     body=json.dumps(request_body)
                 )
                 
                 result = json.loads(response['body'].read())
+                
+                # Debug: Print response
+                print(f"   Stop reason: {result.get('stop_reason')}")
+                print(f"   Content blocks: {len(result.get('content', []))}")
+                for idx, block in enumerate(result.get('content', [])):
+                    print(f"      Block {idx}: type={block.get('type')}")
                 
                 # Check stop reason
                 stop_reason = result.get('stop_reason')
@@ -147,16 +161,23 @@ class Strands:
                 if stop_reason == 'tool_use':
                     tool_results = []
                     
+                    print(f"   🔧 Claude wants to use tools!")
+                    
                     for content_block in assistant_content:
                         if content_block.get('type') == 'tool_use':
                             tool_name = content_block['name']
                             tool_input = content_block['input']
                             tool_use_id = content_block['id']
                             
+                            print(f"   📞 Calling tool: {tool_name}")
+                            print(f"      Input: {tool_input}")
+                            
                             # Execute the tool
                             try:
                                 tool_func = tool_map[tool_name]
                                 result = tool_func(**tool_input)
+                                
+                                print(f"      ✅ Result: {result}")
                                 
                                 # Record the tool call
                                 tool_calls.append(ToolCall(

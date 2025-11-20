@@ -27,6 +27,7 @@ with col1:
     
     # Trip Input
     with st.form("trip_form"):
+        origin = st.selectbox("Starting From", ["Los Angeles, CA", "San Francisco, CA", "San Diego, CA", "Seattle, WA", "Las Vegas, NV"])
         destination = st.selectbox("Destination", ["Los Angeles, CA", "San Francisco, CA", "San Diego, CA", "Seattle, WA", "Las Vegas, NV"])
         departure = st.selectbox("Departure", ["Tomorrow Morning", "Tonight", "Next Week"])
         
@@ -42,12 +43,42 @@ with col1:
         st.session_state.trip_active = True
         st.session_state.notifications = []
         
-        # Build trip data
-        distance_map = {"Los Angeles, CA": 280, "San Francisco, CA": 380, "San Diego, CA": 120, "Seattle, WA": 1150, "Las Vegas, NV": 270}
+        # Build trip data with distance matrix
+        # Distance matrix (miles between cities)
+        distance_matrix = {
+            ("Los Angeles, CA", "San Francisco, CA"): 380,
+            ("Los Angeles, CA", "San Diego, CA"): 120,
+            ("Los Angeles, CA", "Seattle, WA"): 1150,
+            ("Los Angeles, CA", "Las Vegas, NV"): 270,
+            ("San Francisco, CA", "Los Angeles, CA"): 380,
+            ("San Francisco, CA", "San Diego, CA"): 500,
+            ("San Francisco, CA", "Seattle, WA"): 800,
+            ("San Francisco, CA", "Las Vegas, NV"): 570,
+            ("San Diego, CA", "Los Angeles, CA"): 120,
+            ("San Diego, CA", "San Francisco, CA"): 500,
+            ("San Diego, CA", "Seattle, WA"): 1250,
+            ("San Diego, CA", "Las Vegas, NV"): 330,
+            ("Seattle, WA", "Los Angeles, CA"): 1150,
+            ("Seattle, WA", "San Francisco, CA"): 800,
+            ("Seattle, WA", "San Diego, CA"): 1250,
+            ("Seattle, WA", "Las Vegas, NV"): 1120,
+            ("Las Vegas, NV", "Los Angeles, CA"): 270,
+            ("Las Vegas, NV", "San Francisco, CA"): 570,
+            ("Las Vegas, NV", "San Diego, CA"): 330,
+            ("Las Vegas, NV", "Seattle, WA"): 1120,
+        }
+        
+        # Get distance between origin and destination
+        distance = distance_matrix.get((origin, destination), 0)
+        
+        if origin == destination:
+            st.warning("⚠️ Origin and destination are the same!")
+            distance = 0
+        
         trip_data = {
-            "origin": "Current Location",
+            "origin": origin,
             "destination": destination,
-            "distance_miles": distance_map.get(destination, 280),
+            "distance_miles": distance,
             "departure": (datetime.now() + timedelta(days=1)).replace(hour=9, minute=0).isoformat()
         }
         st.session_state.vehicle['battery_percent'] = current_battery

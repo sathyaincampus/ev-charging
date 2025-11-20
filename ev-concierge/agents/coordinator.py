@@ -106,18 +106,34 @@ class CoordinatorAgent:
         charging_tools = results.get('charging', {}).get('tool_results', [])
         if charging_tools:
             summary_parts.append("\n**⚡ Charging Plan:**")
+            
+            # First, collect charger info from search results
+            chargers_map = {}
+            for tool_result in charging_tools:
+                if isinstance(tool_result, list):
+                    # This is from search_chargers
+                    for charger in tool_result:
+                        if isinstance(charger, dict) and 'id' in charger:
+                            chargers_map[charger['id']] = charger
+            
+            # Then, show reservations with charger details
             for tool_result in charging_tools:
                 if isinstance(tool_result, dict):
                     if 'reservation_id' in tool_result:
-                        location = tool_result.get('location', 'Unknown')
+                        charger_id = tool_result.get('charger_id', 'Unknown')
                         time_slot = tool_result.get('time_slot', 'TBD')
                         duration = tool_result.get('duration_min', 30)
-                        summary_parts.append(f"- Reserved at {location}")
+                        
+                        # Get charger details from search results
+                        charger_info = chargers_map.get(charger_id, {})
+                        location = charger_info.get('location', charger_id)
+                        network = charger_info.get('network', 'Charger')
+                        power_kw = charger_info.get('power_kw', 'N/A')
+                        
+                        summary_parts.append(f"- **{network}** at {location}")
+                        summary_parts.append(f"  Power: {power_kw} kW")
                         summary_parts.append(f"  Time: {time_slot}, Duration: {duration} min")
                         summary_parts.append(f"  Confirmation: `{tool_result['reservation_id']}`")
-                    elif isinstance(tool_result, list):
-                        # Charger search results
-                        summary_parts.append(f"- Found {len(tool_result)} available chargers")
         
         # Amenities
         amenities_tools = results.get('amenities', {}).get('tool_results', [])
