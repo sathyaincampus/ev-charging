@@ -10,7 +10,7 @@ st.set_page_config(page_title="EV Concierge", page_icon="🚗", layout="wide")
 if 'coordinator' not in st.session_state:
     st.session_state.coordinator = CoordinatorAgent()
     st.session_state.vehicle = {"model": "Tesla Model Y", "battery_percent": 45, "range_miles": 300}
-    st.session_state.preferences = {"auto_order_coffee": True, "favorite_drink": "Large Latte", "favorite_food": "Breakfast Sandwich", "wallet_id": "WALLET-12345"}
+    st.session_state.preferences = {"auto_order_coffee": True, "restaurant": "Starbucks", "favorite_drink": "Large Latte", "favorite_food": "Breakfast Sandwich", "wallet_id": "WALLET-12345"}
     st.session_state.agent_status = {}
     st.session_state.trip_active = False
     st.session_state.notifications = []
@@ -278,10 +278,22 @@ with col2:
     
     with st.expander("Edit Preferences", expanded=False):
         auto_order = st.checkbox("Auto-order coffee/food", value=st.session_state.preferences['auto_order_coffee'])
-        favorite_drink = st.selectbox("Favorite Drink", ["Large Latte", "Cappuccino", "Coffee", "None"], 
-                                      index=["Large Latte", "Cappuccino", "Coffee", "None"].index(st.session_state.preferences.get('favorite_drink', 'Large Latte')))
-        favorite_food = st.selectbox("Favorite Food", ["Breakfast Sandwich", "Croissant", "Cookies", "None"], 
-                                     index=["Breakfast Sandwich", "Croissant", "Cookies", "None"].index(st.session_state.preferences.get('favorite_food', 'Breakfast Sandwich')))
+        
+        # Restaurant selection
+        from utils.mock_data import get_mock_menu
+        restaurants = ["Starbucks", "Subway", "McDonald's"]
+        restaurant = st.selectbox("Preferred Restaurant", restaurants,
+                                 index=restaurants.index(st.session_state.preferences.get('restaurant', 'Starbucks')))
+        
+        # Get menu from selected restaurant
+        menu = get_mock_menu(restaurant)
+        drinks = [item for item in menu if 'Latte' in item or 'Cappuccino' in item or 'Coffee' in item] + ["None"]
+        foods = [item for item in menu if item not in drinks] + ["None"]
+        
+        favorite_drink = st.selectbox("Favorite Drink", drinks, 
+                                      index=drinks.index(st.session_state.preferences.get('favorite_drink', drinks[0])) if st.session_state.preferences.get('favorite_drink') in drinks else 0)
+        favorite_food = st.selectbox("Favorite Food", foods, 
+                                     index=foods.index(st.session_state.preferences.get('favorite_food', foods[0])) if st.session_state.preferences.get('favorite_food') in foods else 0)
         
         # Create display labels with current balance from session state
         wallet_labels = [f"{wallet_id} - {info['name']} (${st.session_state.wallet_balances.get(wallet_id, 0):.2f})" 
@@ -305,6 +317,7 @@ with col2:
         if st.button("Save Preferences"):
             st.session_state.preferences = {
                 "auto_order_coffee": auto_order,
+                "restaurant": restaurant,
                 "favorite_drink": favorite_drink,
                 "favorite_food": favorite_food,
                 "wallet_id": selected_wallet_id
