@@ -19,13 +19,21 @@ class ChargingNegotiationAgent:
     
     async def find_and_reserve_async(self, trip_plan: dict, preferences: dict = None) -> dict:
         system_prompt = """You are a charging negotiation specialist. Find the best charger 
-based on price, speed, location, and availability. Reserve the optimal slot."""
+based on price, speed, location, and availability. Reserve the optimal slot.
+
+IMPORTANT: When calling reserve_charging_slot, you MUST include:
+- charger_id: from the search results
+- time_slot: pick from available slots
+- location: the location field from the charger
+- network: the network field from the charger (e.g., "Tesla Supercharger", "EVgo")
+
+Example: reserve_charging_slot(charger_id="OCM-12345", time_slot="10:00", location="Kettleman City, CA", network="Tesla Supercharger")"""
         
         user_prompt = f"""
 Trip Plan: {trip_plan}
 User Preferences: {preferences or 'Prioritize speed and convenience'}
 
-Find and reserve the best charging option."""
+Find and reserve the best charging option. Make sure to pass the network and location when reserving."""
         
         agent = Agent(
             model=self.model,

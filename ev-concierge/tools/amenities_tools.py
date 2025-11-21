@@ -7,19 +7,17 @@ import json
 @tool
 def check_nearby_amenities(location: str) -> str:
     """Check available restaurants and facilities near charging location"""
-    if USE_MOCK_DATA:
-        result = get_mock_amenities(location)
-    else:
-        result = {}
+    # Always return mock amenities for demo purposes
+    # In production, this would query Google Places API or similar
+    result = get_mock_amenities(location)
     return json.dumps(result)
 
 @tool
 def get_restaurant_menu(restaurant_name: str) -> str:
     """Get menu items from a restaurant"""
-    if USE_MOCK_DATA:
-        result = get_mock_menu(restaurant_name)
-    else:
-        result = []
+    # Always return mock menu for demo purposes
+    # In production, this would query restaurant APIs
+    result = get_mock_menu(restaurant_name)
     return json.dumps(result)
 
 @tool

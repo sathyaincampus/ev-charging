@@ -37,7 +37,15 @@ def search_chargers(route: str, destination: str, min_power_kw: int = 150) -> st
 
 @tool
 def reserve_charging_slot(charger_id: str, time_slot: str, duration_min: int = 30, location: str = "", network: str = "") -> str:
-    """Reserve a specific charging slot at a charger"""
+    """Reserve a specific charging slot at a charger.
+    
+    Args:
+        charger_id: The ID of the charger from search results
+        time_slot: Preferred time slot (e.g., "10:00")
+        duration_min: Duration in minutes (default 30)
+        location: Location of the charger (e.g., "Kettleman City, CA")
+        network: Network name (e.g., "Tesla Supercharger", "EVgo", "Electrify America")
+    """
     result = {
         "reservation_id": f"RES-{charger_id}-{int(datetime.now().timestamp())}",
         "charger_id": charger_id,

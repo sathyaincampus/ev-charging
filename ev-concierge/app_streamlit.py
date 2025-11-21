@@ -154,6 +154,32 @@ with col1:
             # Display results with better formatting
             if needs_charging:
                 result_placeholder.success(f"### ✅ Trip Planned Successfully\n\n{result['summary']}")
+                
+                # Show charging stations found
+                if 'results' in result and 'charging' in result['results']:
+                    charging_results = result['results']['charging']
+                    tool_results = charging_results.get('tool_results', [])
+                    
+                    # Find the search results (list of stations)
+                    for tool_result in tool_results:
+                        if isinstance(tool_result, list) and len(tool_result) > 0:
+                            st.markdown("---")
+                            st.markdown("### 🔌 Charging Stations Found")
+                            
+                            # Display stations in a nice format
+                            for i, station in enumerate(tool_result[:5], 1):
+                                with st.expander(f"⚡ {station.get('network', 'Unknown')} - {station.get('location', 'Unknown')}", expanded=(i==1)):
+                                    col_a, col_b = st.columns(2)
+                                    with col_a:
+                                        st.markdown(f"**Address:** {station.get('address', 'N/A')}")
+                                        st.markdown(f"**Power:** {station.get('power_kw', 0)} kW")
+                                    with col_b:
+                                        st.markdown(f"**Price:** ${station.get('price_per_kwh', 0)}/kWh")
+                                        st.markdown(f"**Status:** {'🟢 Available' if station.get('available') else '🔴 Unavailable'}")
+                                    
+                                    if station.get('amenities'):
+                                        st.markdown(f"**Amenities:** {', '.join(station['amenities'])}")
+                            break
             else:
                 result_placeholder.info(f"### ✅ Trip Planned\n\n{result['summary']}")
             
@@ -184,10 +210,11 @@ with col1:
                     charging_tools = result['results']['charging'].get('tool_results', [])
                     for tool_result in charging_tools:
                         if isinstance(tool_result, dict) and 'reservation_id' in tool_result:
+                            network = tool_result.get('network', 'Unknown')
                             location = tool_result.get('location', 'Unknown')
                             st.session_state.notifications.append({
                                 "time": datetime.now().strftime("%H:%M"),
-                                "message": f"🔌 Reserved charger at {location}",
+                                "message": f"🔌 Reserved {network} at {location}",
                                 "type": "info"
                             })
                 

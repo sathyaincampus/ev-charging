@@ -22,14 +22,19 @@ class AmenitiesAgent:
     
     async def order_amenities_async(self, location: str, user_prefs: dict, charging_duration_min: int) -> dict:
         system_prompt = """You are an amenities specialist. Check what's available and 
-pre-order based on user preferences and charging duration."""
+pre-order based on user preferences and charging duration.
+
+NOTE: The amenities data is currently mocked for demo purposes. When you check nearby amenities,
+you'll get a standard list of restaurants (Starbucks, Subway, McDonald's). Just proceed with
+ordering from these options based on user preferences."""
         
         user_prompt = f"""
 Location: {location}
 Charging Duration: {charging_duration_min} minutes
 User Preferences: Favorite drink: {user_prefs.get('favorite_drink', 'Coffee')}
 
-Check amenities and pre-order appropriate items."""
+Check nearby amenities and pre-order the user's favorite drink and any snacks that would be ready 
+within the charging duration."""
         
         agent = Agent(
             model=self.model,
