@@ -10,10 +10,19 @@ st.set_page_config(page_title="EV Concierge", page_icon="🚗", layout="wide")
 if 'coordinator' not in st.session_state:
     st.session_state.coordinator = CoordinatorAgent()
     st.session_state.vehicle = {"model": "Tesla Model Y", "battery_percent": 45, "range_miles": 300}
-    st.session_state.preferences = {"auto_order_coffee": True, "favorite_drink": "Large Latte", "wallet_id": "WALLET-12345"}
+    st.session_state.preferences = {"auto_order_coffee": True, "restaurant": "Starbucks", "favorite_drink": "Large Latte", "favorite_food": "Breakfast Sandwich", "wallet_id": "WALLET-12345"}
     st.session_state.agent_status = {}
     st.session_state.trip_active = False
     st.session_state.notifications = []
+    
+    # Initialize wallet balances (tracked in session)
+    st.session_state.wallet_balances = {
+        "WALLET-12345": 1250.00,
+        "WALLET-67890": 2500.00,
+        "WALLET-11111": 150.00,
+        "WALLET-22222": 5000.00,
+        "WALLET-33333": 500.00
+    }
 
 # Header
 st.markdown("# 🚗 Proactive EV Concierge")
@@ -140,6 +149,20 @@ with col1:
                 progress_bar.progress(0.9)
                 time.sleep(0.2)
                 st.session_state.agent_status["Payment"].success("✅ Complete")
+                
+                # Deduct payment from wallet balance
+                if 'payments' in result.get('results', {}):
+                    payment_result = result['results']['payments']
+                    if 'tool_results' in payment_result:
+                        for tool_result in payment_result['tool_results']:
+                            if isinstance(tool_result, dict) and tool_result.get('success'):
+                                # Check if it's a batch payment result
+                                if 'successful' in tool_result:
+                                    total_charged = tool_result.get('total_amount', 0)
+                                    wallet_id = st.session_state.preferences.get('wallet_id', 'WALLET-12345')
+                                    if wallet_id in st.session_state.wallet_balances:
+                                        st.session_state.wallet_balances[wallet_id] -= total_charged
+                                        st.session_state.wallet_balances[wallet_id] = round(st.session_state.wallet_balances[wallet_id], 2)
             else:
                 # Mark unused agents as skipped
                 st.session_state.agent_status["Charging"].info("⏭️ Skipped")
@@ -271,18 +294,87 @@ with col2:
     st.markdown("---")
     st.markdown("### 🎯 Preferences")
     
-    with st.expander("Edit Preferences"):
+    # Wallet options
+    wallet_options = {
+        "WALLET-12345": {"name": "John Doe"},
+        "WALLET-67890": {"name": "Jane Smith"},
+        "WALLET-11111": {"name": "Bob Johnson"},
+        "WALLET-22222": {"name": "Alice Williams"},
+        "WALLET-33333": {"name": "Demo User"}
+    }
+    
+    with st.expander("Edit Preferences", expanded=False):
         auto_order = st.checkbox("Auto-order coffee/food", value=st.session_state.preferences['auto_order_coffee'])
-        favorite_drink = st.text_input("Favorite Drink", value=st.session_state.preferences['favorite_drink'])
-        wallet_id = st.text_input("Wallet ID", value=st.session_state.preferences['wallet_id'])
+        
+        # Restaurant selection
+        from utils.mock_data import get_mock_menu
+        restaurants = ["Starbucks", "Subway", "McDonald's"]
+        restaurant = st.selectbox("Preferred Restaurant", restaurants,
+                                 index=restaurants.index(st.session_state.preferences.get('restaurant', 'Starbucks')))
+        
+        # Get menu from selected restaurant
+        menu = get_mock_menu(restaurant)
+        drinks = [item for item in menu if 'Latte' in item or 'Cappuccino' in item or 'Coffee' in item] + ["None"]
+        foods = [item for item in menu if item not in drinks] + ["None"]
+        
+        favorite_drink = st.selectbox("Favorite Drink", drinks, 
+                                      index=drinks.index(st.session_state.preferences.get('favorite_drink', drinks[0])) if st.session_state.preferences.get('favorite_drink') in drinks else 0)
+        favorite_food = st.selectbox("Favorite Food", foods, 
+                                     index=foods.index(st.session_state.preferences.get('favorite_food', foods[0])) if st.session_state.preferences.get('favorite_food') in foods else 0)
+        
+        # Create display labels with current balance from session state
+        wallet_labels = [f"{wallet_id} - {info['name']} (${st.session_state.wallet_balances.get(wallet_id, 0):.2f})" 
+                        for wallet_id, info in wallet_options.items()]
+        wallet_ids = list(wallet_options.keys())
+        
+        # Find current wallet index
+        current_wallet = st.session_state.preferences.get('wallet_id', 'WALLET-12345')
+        current_index = wallet_ids.index(current_wallet) if current_wallet in wallet_ids else 0
+        
+        selected_wallet_label = st.selectbox(
+            "Payment Wallet", 
+            wallet_labels,
+            index=current_index,
+            help="Select wallet for charging and amenity payments"
+        )
+        
+        # Extract wallet_id from selected label
+        selected_wallet_id = wallet_ids[wallet_labels.index(selected_wallet_label)]
         
         if st.button("Save Preferences"):
             st.session_state.preferences = {
                 "auto_order_coffee": auto_order,
+                "restaurant": restaurant,
                 "favorite_drink": favorite_drink,
-                "wallet_id": wallet_id
+                "favorite_food": favorite_food,
+                "wallet_id": selected_wallet_id
             }
             st.success("Preferences saved!")
+            st.rerun()
+    
+    st.markdown("---")
+    st.markdown("### 💳 Active Wallet")
+    
+    # Display current wallet balance (from saved preferences)
+    current_wallet_id = st.session_state.preferences.get('wallet_id', 'WALLET-12345')
+    current_balance = st.session_state.wallet_balances.get(current_wallet_id, 0)
+    current_wallet_name = wallet_options.get(current_wallet_id, {}).get('name', 'Unknown')
+    
+    st.markdown(f"**{current_wallet_name}**")
+    st.markdown(f"`{current_wallet_id}`")
+    st.metric("Balance", f"${current_balance:.2f}")
+    
+    # Reset balances button
+    if st.button("🔄 Reset All Balances", help="Reset all wallet balances to initial values"):
+        st.session_state.wallet_balances = {
+            "WALLET-12345": 1250.00,
+            "WALLET-67890": 2500.00,
+            "WALLET-11111": 150.00,
+            "WALLET-22222": 5000.00,
+            "WALLET-33333": 500.00
+        }
+        st.success("All wallet balances reset!")
+        st.rerun()
 
 # Footer
 st.markdown("---")

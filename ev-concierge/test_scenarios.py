@@ -163,7 +163,8 @@ SCENARIOS = {
         "preferences": {
             "charging_priority": "fastest",
             "auto_order_coffee": True,
-            "favorite_drink": "Large Latte"
+            "favorite_drink": "Large Latte",
+            "favorite_food": "Breakfast Sandwich"
         },
         "expected": {
             "needs_charging": True,
