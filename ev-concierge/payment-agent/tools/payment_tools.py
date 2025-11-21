@@ -61,15 +61,6 @@ def process_payment(
             "available": wallet["balance"]
         }
     
-    # Simulate occasional failures (5% chance)
-    if random.random() < 0.05:
-        return {
-            "success": False,
-            "error": "payment_declined",
-            "message": "Payment was declined by the payment processor. Please try again.",
-            "retry_allowed": True
-        }
-    
     # Generate transaction
     transaction_id = f"TXN-{int(datetime.now().timestamp())}"
     

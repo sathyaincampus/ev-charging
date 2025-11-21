@@ -249,8 +249,29 @@ class CoordinatorAgent:
                         items = tool_result.get('items', [])
                         total = tool_result.get('total_usd', 0)
                         pickup_time = tool_result.get('pickup_time', 'TBD')
+                        
+                        # Categorize items as food or drink
+                        drinks = []
+                        food = []
+                        drink_keywords = ['latte', 'coffee', 'cappuccino', 'tea', 'drink', 'espresso', 'mocha']
+                        
+                        for item in items:
+                            item_lower = item.lower()
+                            if any(keyword in item_lower for keyword in drink_keywords):
+                                drinks.append(item)
+                            else:
+                                food.append(item)
+                        
                         summary_parts.append(f"- Pre-ordered from {restaurant}")
-                        summary_parts.append(f"  Items: {', '.join(items)}")
+                        
+                        # Show breakdown by category
+                        if drinks:
+                            summary_parts.append(f"  🥤 Drinks: {', '.join(drinks)}")
+                        if food:
+                            summary_parts.append(f"  🍔 Food: {', '.join(food)}")
+                        if not drinks and not food:
+                            summary_parts.append(f"  Items: {', '.join(items)}")
+                        
                         summary_parts.append(f"  Total: ${total:.2f}")
                         summary_parts.append(f"  Pickup: {pickup_time}")
                         summary_parts.append(f"  Order: `{tool_result['order_id']}`")
