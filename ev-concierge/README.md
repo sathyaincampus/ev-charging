@@ -4,73 +4,58 @@ An intelligent, proactive EV charging assistant that manages your entire chargin
 
 ## 🏗️ Architecture
 
+> **📖 See [ARCHITECTURE.md](ARCHITECTURE.md) for detailed architecture documentation**
+
 ```mermaid
 graph TB
     subgraph "User Interface"
-        UI[Gradio Chat UI]
+        UI[Streamlit UI<br/>Real-time streaming]
     end
     
-    subgraph "Coordinator Layer"
-        COORD[Coordinator Agent<br/>Orchestrates all agents]
+    subgraph "Coordinator"
+        COORD[Coordinator Agent<br/>Orchestrates workflow]
     end
     
-    subgraph "Specialized Agents"
-        TRIP[Trip Planning Agent<br/>Energy analysis & strategy]
-        CHARGE[Charging Negotiation Agent<br/>Find & reserve chargers]
-        AMEN[Amenities Agent<br/>Pre-order food/coffee]
-        PAY[Payment Agent<br/>Autonomous transactions]
-        MON[Monitoring Agent<br/>Real-time tracking]
+    subgraph "Specialized Agents - AWS Strands SDK"
+        TRIP[Trip Planning<br/>✓ Async + Sync]
+        CHARGE[Charging<br/>✓ Async + Sync]
+        AMEN[Amenities<br/>✓ Async + Sync]
+        PAY[Payment<br/>✓ Async + Sync]
+        MON[Monitoring<br/>✓ Async + Sync]
     end
     
-    subgraph "External APIs"
-        EVGO[EVgo API]
-        CHARGE_API[ChargePoint API]
-        TESLA[Tesla Supercharger API]
-        ELECTRIFY[Electrify America API]
-        FOOD[Food Ordering APIs<br/>Starbucks, etc.]
-        WALLET[Digital Wallet API<br/>Apple Pay, Google Pay]
-        MAPS[Google Maps API<br/>Route & Traffic]
-        WEATHER[Weather API]
+    subgraph "Tools Layer"
+        TOOLS[@tool decorated<br/>Returns JSON strings]
+    end
+    
+    subgraph "AWS Strands SDK"
+        SDK[BedrockModel + Agent<br/>stream_async&#40;&#41;]
     end
     
     subgraph "AWS Services"
         BEDROCK[Amazon Bedrock<br/>Claude 3.5 Sonnet]
-        STRANDS[AWS Strands SDK<br/>Agent Framework]
-        DYNAMO[DynamoDB<br/>User preferences & history]
-        SECRETS[Secrets Manager<br/>API keys]
     end
     
     UI --> COORD
-    COORD --> TRIP
-    COORD --> CHARGE
-    COORD --> AMEN
-    COORD --> PAY
-    COORD --> MON
+    COORD --> TRIP & CHARGE & AMEN & PAY & MON
+    TRIP & CHARGE & AMEN & PAY & MON --> SDK
+    TRIP & CHARGE & AMEN & PAY & MON --> TOOLS
+    SDK --> BEDROCK
     
-    TRIP --> BEDROCK
-    CHARGE --> BEDROCK
-    AMEN --> BEDROCK
-    PAY --> BEDROCK
-    MON --> BEDROCK
-    
-    TRIP --> STRANDS
-    CHARGE --> STRANDS
-    AMEN --> STRANDS
-    PAY --> STRANDS
-    MON --> STRANDS
-    
-    TRIP --> MAPS
-    TRIP --> WEATHER
-    CHARGE --> EVGO
-    CHARGE --> CHARGE_API
-    CHARGE --> TESLA
-    CHARGE --> ELECTRIFY
-    AMEN --> FOOD
-    PAY --> WALLET
-    
-    COORD --> DYNAMO
-    COORD --> SECRETS
+    style SDK fill:#FF9900
+    style TRIP fill:#4CAF50
+    style CHARGE fill:#4CAF50
+    style AMEN fill:#4CAF50
+    style PAY fill:#4CAF50
+    style MON fill:#4CAF50
 ```
+
+### Key Features
+- ✅ **AWS Strands SDK**: Official agent framework
+- ✅ **Async Architecture**: `stream_async()` with sync wrappers
+- ✅ **Tool Calling**: `@tool` decorator with JSON returns
+- ✅ **Event Streaming**: Real-time progressive responses
+- ✅ **Multi-Agent**: 5 specialized agents + coordinator
 
 ## 📋 Required APIs & Services
 

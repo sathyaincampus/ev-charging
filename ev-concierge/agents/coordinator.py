@@ -265,14 +265,17 @@ class CoordinatorAgent:
                         time_slot = tool_result.get('time_slot', 'TBD')
                         duration = tool_result.get('duration_min', 30)
                         
-                        # Get charger details from search results
+                        # Try to get charger details from search results first
                         charger_info = chargers_map.get(charger_id, {})
-                        location = charger_info.get('location', charger_id)
-                        network = charger_info.get('network', 'Charger')
+                        
+                        # If not in map, use data from reservation (agent should pass it)
+                        location = tool_result.get('location') or charger_info.get('location', charger_id)
+                        network = tool_result.get('network') or charger_info.get('network', 'Charger')
                         power_kw = charger_info.get('power_kw', 'N/A')
                         
                         summary_parts.append(f"- **{network}** at {location}")
-                        summary_parts.append(f"  Power: {power_kw} kW")
+                        if power_kw != 'N/A':
+                            summary_parts.append(f"  Power: {power_kw} kW")
                         summary_parts.append(f"  Time: {time_slot}, Duration: {duration} min")
                         summary_parts.append(f"  Confirmation: `{tool_result['reservation_id']}`")
         

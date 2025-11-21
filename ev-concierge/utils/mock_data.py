@@ -38,9 +38,12 @@ def get_mock_chargers(route, location):
     ]
 
 def get_mock_amenities(location):
+    """Return mock amenities for any location.
+    In production, this would query Google Places API or similar."""
     return {
         "restaurants": ["Starbucks", "Subway", "McDonald's"],
-        "facilities": ["Restrooms", "WiFi", "Convenience Store", "ATM"]
+        "facilities": ["Restrooms", "WiFi", "Convenience Store", "ATM"],
+        "note": f"Mock amenities for {location} - In production, would query real nearby businesses"
     }
 
 def get_mock_menu(restaurant):

@@ -3,8 +3,10 @@
 ## 🎯 Quick Navigation
 
 ### Getting Started
-1. **[README.md](README.md)** - Main project documentation with architecture diagram
-2. **[SETUP.md](SETUP.md)** - Installation and configuration guide
+1. **[README.md](README.md)** - Main project documentation with architecture overview
+2. **[ARCHITECTURE.md](ARCHITECTURE.md)** - Detailed architecture documentation (NEW)
+3. **[ARCHITECTURE_SUMMARY.md](ARCHITECTURE_SUMMARY.md)** - Quick architecture reference (NEW)
+4. **[SETUP.md](SETUP.md)** - Installation and configuration guide
 3. **[start.sh](start.sh)** - One-command quick start script
 
 ### Understanding the System
@@ -48,8 +50,10 @@
 4. Try example prompts in the UI
 
 ### For Developers
-1. Read **PROJECT_SUMMARY.md** for architecture
-2. Study **WORKFLOW.md** for agent interactions
+1. Read **[ARCHITECTURE.md](ARCHITECTURE.md)** for detailed architecture (UPDATED)
+2. Read **[ARCHITECTURE_SUMMARY.md](ARCHITECTURE_SUMMARY.md)** for quick reference (NEW)
+3. Read **[STRANDS_SDK_MIGRATION.md](STRANDS_SDK_MIGRATION.md)** for SDK details (NEW)
+4. Study **WORKFLOW.md** for agent interactions
 3. Review code in `agents/` directory
 4. Understand tools in `tools/` directory
 

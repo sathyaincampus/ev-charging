@@ -12,3 +12,7 @@ EVGO_API_KEY = os.getenv('EVGO_API_KEY')
 CHARGEPOINT_API_KEY = os.getenv('CHARGEPOINT_API_KEY')
 GOOGLE_MAPS_API_KEY = os.getenv('GOOGLE_MAPS_API_KEY')
 STRIPE_API_KEY = os.getenv('STRIPE_API_KEY')
+OPENCHARGEMAP_API_KEY = os.getenv('OPENCHARGEMAP_API_KEY', '')
+
+# OpenChargeMap Configuration
+OPENCHARGEMAP_BASE_URL = 'https://api.openchargemap.io/v3'

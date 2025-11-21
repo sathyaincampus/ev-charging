@@ -4,6 +4,15 @@ Test scenarios for EV Concierge
 Different battery/distance combinations to test all agent paths
 """
 
+# City coordinates for API queries
+CITY_COORDINATES = {
+    "Los Angeles, CA": (34.0522, -118.2437),
+    "San Francisco, CA": (37.7749, -122.4194),
+    "San Diego, CA": (32.7157, -117.1611),
+    "Seattle, WA": (47.6062, -122.3321),
+    "Las Vegas, NV": (36.1699, -115.1398),
+}
+
 # Test Scenarios
 SCENARIOS = {
     "no_charging_needed": {

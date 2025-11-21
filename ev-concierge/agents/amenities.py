@@ -40,7 +40,11 @@ class AmenitiesAgent:
         
         system_prompt = """You are an amenities specialist. Check what's available and 
 pre-order based on user preferences and charging duration. ONLY order items that the user 
-has specified in their preferences. If they don't want drinks or food, don't order them."""
+has specified in their preferences. If they don't want drinks or food, don't order them.
+
+NOTE: The amenities data is currently mocked for demo purposes. When you check nearby amenities,
+you'll get a standard list of restaurants (Starbucks, Subway, McDonald's). Just proceed with
+ordering from these options based on user preferences."""
         
         user_prompt = f"""
 Location: {location}
